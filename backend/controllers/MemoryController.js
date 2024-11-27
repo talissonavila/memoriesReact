@@ -84,8 +84,43 @@ const updateMemory = async (req, res) => {
 
         const updateMemory = await Memory.findByIdAndUpdate(req.params.id, newData, { new: true });
 
-        res.json({ updateMemory, msg: "Memory updated successfully." });
+        res.json({ updateMemory, msg: "Memory updated successfully" });
 
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).send(`An error occur. Error message: ${error.message}`);
+    }
+}
+
+const toggleFavorite = async (req, res) => {
+    try {
+        const memory = await Memory.findById(req.params.id);
+
+        if (!memory) return res.status(404).json({ msg: "Memory not found" });
+
+        memory.favorite = !memory.favorite;
+        await memory.save();
+        res.json({ memory, msg: "Favorite added to favorites" });
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).send(`An error occur. Error message: ${error.message}`);
+    }
+}
+
+const addComment = async (req, res) => {
+    try {
+        const { name, text } = req.body;
+        if (!name || !text) return res.status(404).json({ msg: "Please, fill all required fields" });
+
+        const comment = { name, text };
+
+        const memory = await Memory.findById(req.params.id);
+        if (!memory) return res.status(404).json({ msg: "Memory not found" });
+
+        memory.comments.push(comment);
+        await memory.save();
+
+        res.json({ memory, msg: "Comment added successfully" });
     } catch (error) {
         console.log(error.message);
         res.status(500).send(`An error occur. Error message: ${error.message}`);
@@ -98,4 +133,6 @@ module.exports = {
     getMemory,
     deleteMemory,
     updateMemory,
+    toggleFavorite,
+    addComment,
 };
